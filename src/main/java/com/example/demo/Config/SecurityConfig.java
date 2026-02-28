@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().and()
                 .authorizeRequests()
                 // Públicas
-                .antMatchers("/", "/login", "/css/**", "/js/**", "/uploads/**").permitAll()
+                .antMatchers("/", "/login", "/css/**", "/js/**", "/uploads/**", "/favicon.ico").permitAll()
                 .antMatchers("/home")
                 .hasAnyRole("ADMIN", "OPERADOR")
                 .antMatchers("/problema/**", "/problema/listar-problemas")
