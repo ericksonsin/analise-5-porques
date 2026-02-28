@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/head :: head('Histórico de Análises')"></head>
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+
+    /* Estilo Timeline para os 5 Porquês no Modal */
+    .timeline-steps {
+        border-left: 3px solid #0d6efd;
+        padding-left: 20px;
+        position: relative;
+    }
+
+    .timeline-item {
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .timeline-item::before {
+        content: '';
+        background: #0d6efd;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        position: absolute;
+        left: -27.5px;
+        top: 5px;
+    }
+
+    .bg-success-soft {
+        background-color: #e8f5e9;
+    }
+
+    .bg-warning-soft {
+        background-color: #fff3e0;
+    }
+
+    @media (max-width: 768px) {
+        .hide-mobile {
+            display: none;
+        }
+    }
+</style>
+
+<body class="bg-light">
+
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container mt-4 mb-5">
+        <div th:replace="fragments/messages :: mensagens"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0"><i class="fas fa-microscope me-2 text-primary"></i>Análises Técnicas</h3>
+            <div>
+                <!-- Botão de Exportar Excel (NOVO) -->
+                <button class="btn btn-success shadow-sm me-2" onclick="exportarParaExcel()">
+                    <i class="fas fa-file-excel"></i> <span class="hide-mobile">Exportar Excel</span>
+                </button>
+                <a th:href="@{/problema/novo}" class="btn btn-primary shadow-sm">
+                    <i class="fas fa-plus"></i> <span class="hide-mobile">Novo Registro</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table id="tabela" class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="ps-3">Equipamento</th>
+                                <th class="hide-mobile">Responsável</th>
+                                <th>Status Análise</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="analise : ${analises}">
+                                <td class="ps-3">
+                                    <div class="fw-bold text-primary"
+                                        th:text="|${analise.equipamento?.nome} - ${analise.subconjunto?.nome}|">
+                                    </div>
+                                    <small class="text-muted"
+                                        th:text="${#temporals.format(analise.dataInicioAvaria, 'dd/MM/yy HH:mm')}"></small>
+                                </td>
+                                <td class="hide-mobile">
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="fas fa-user-cog me-1"></i>
+                                        <span th:text="${analise.mecanico?.nome}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:if="${analise.causaRaiz != null && !analise.causaRaiz.isEmpty()}"
+                                        class="badge bg-success-soft text-success border border-success">
+                                        <i class="fas fa-check-double"></i> Finalizada
+                                    </span>
+                                    <span th:unless="${analise.causaRaiz != null && !analise.causaRaiz.isEmpty()}"
+                                        class="badge bg-warning-soft text-warning border border-warning">
+                                        <i class="fas fa-hourglass-half"></i> Em aberto
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-info text-white" th:attr="data-usuario=${analise.usuarioAnalise?.username},
+                     data-equipamento=${analise.equipamento?.nome},
+                     data-subconjunto=${analise.subconjunto?.nome},
+                     data-mecanico=${analise.mecanico?.nome},
+                     data-descricao=${analise.descricao},
+                     data-inicio=${#temporals.format(analise.dataInicioAvaria, 'dd/MM/yy HH:mm')},
+                     data-fim=${#temporals.format(analise.dataFimAvaria, 'dd/MM/yy HH:mm')},
+                     data-p1=${analise.porque1},
+                     data-p2=${analise.porque2},
+                     data-p3=${analise.porque3},
+                     data-p4=${analise.porque4},
+                     data-p5=${analise.porque5},
+                     data-causa=${analise.causaRaiz},
+                     data-img=${analise.caminhoImagem}" onclick="exibirDetalhes(this)">
+                                            <i class="fas fa-eye"></i> Detalhes
+                                        </button>
+
+                                        <a th:href="@{/problema/editar/{id}(id=${analise.id})}"
+                                            class="btn btn-sm btn-warning" title="Editar Análise">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDetalhes" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Ficha de Análise Técnica</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-7">
+                            <h6 class="text-muted text-uppercase small fw-bold">Informações Gerais</h6>
+                            <p class="mb-1"><strong>Registrado por:</strong> <span id="viewUser"></span></p>
+                            <p class="mb-1"><strong>Equipamento:</strong> <span id="viewEquipamento"></span></p>
+                            <p class="mb-1"><strong>Subconjunto:</strong> <span id="viewSubconjunto"></span></p>
+                            <p class="mb-1"><strong>Mecânico:</strong> <span id="viewMecanico"></span></p>
+                            <p class="mb-1"><strong>Período:</strong> <span id="viewPeriodo"></span></p>
+                            <hr>
+                            <h6 class="text-muted text-uppercase small fw-bold">Descrição do Problema</h6>
+                            <p id="viewDescricao" class="bg-light p-2 rounded border italic text-muted"></p>
+                        </div>
+                        <div class="col-md-5 text-center border-start">
+                            <h6 class="text-muted text-uppercase small fw-bold">Evidência Fotográfica</h6>
+                            <img id="viewImagem" src="" class="img-fluid rounded shadow-sm border"
+                                style="max-height: 200px; display: none;">
+                            <div id="noImageMsg" class="text-muted py-4">
+                                <i class="fas fa-image-slash fa-2x"></i><br>Sem foto
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-muted text-uppercase small fw-bold mb-3">Fluxo de Investigação (5 Porquês)</h6>
+                    <div class="timeline-steps ms-3">
+                        <div class="timeline-item"><strong>1º Por quê?</strong>
+                            <p id="viewP1" class="mb-1 text-secondary"></p>
+                        </div>
+                        <div class="timeline-item"><strong>2º Por quê?</strong>
+                            <p id="viewP2" class="mb-1 text-secondary"></p>
+                        </div>
+                        <div class="timeline-item"><strong>3º Por quê?</strong>
+                            <p id="viewP3" class="mb-1 text-secondary"></p>
+                        </div>
+                        <div class="timeline-item"><strong>4º Por quê?</strong>
+                            <p id="viewP4" class="mb-1 text-secondary"></p>
+                        </div>
+                        <div class="timeline-item"><strong>5º Por quê?</strong>
+                            <p id="viewP5" class="mb-1 text-secondary"></p>
+                        </div>
+                    </div>
+
+                    <div id="causaRaizBox" class="mt-4 p-3 border border-success rounded"
+                        style="display: none; background-color: #f0fff4;">
+                        <h6 class="text-success fw-bold"><i class="fas fa-bullseye me-2"></i>Causa Raiz Identificada:
+                        </h6>
+                        <p id="viewCausaRaiz" class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;"></p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- SheetJS (XLSX) - Biblioteca para gerar Excel real -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+    <script th:inline="javascript">
+        function exibirDetalhes(btn) {
+            const getAttr = (attr) => {
+                const val = btn.getAttribute('data-' + attr);
+                return (val && val !== 'null' && val !== 'undefined') ? val : '---';
+            };
+
+            const setText = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
+
+            // Preenchimento dos campos básicos
+            setText('viewUser', getAttr('usuario'));
+            setText('viewEquipamento', getAttr('equipamento'));
+            setText('viewSubconjunto', getAttr('subconjunto'));
+            setText('viewMecanico', getAttr('mecanico'));
+            setText('viewDescricao', getAttr('descricao'));
+            setText('viewPeriodo', `De ${getAttr('inicio')} até ${getAttr('fim')}`);
+
+            // 5 Porquês
+            setText('viewP1', getAttr('p1'));
+            setText('viewP2', getAttr('p2'));
+            setText('viewP3', getAttr('p3'));
+            setText('viewP4', getAttr('p4'));
+            setText('viewP5', getAttr('p5'));
+
+            // Lógica Causa Raiz
+            const causa = getAttr('causa');
+            const boxRaiz = document.getElementById('causaRaizBox');
+            if (causa !== '---') {
+                boxRaiz.style.display = 'block';
+                setText('viewCausaRaiz', causa);
+            } else {
+                boxRaiz.style.display = 'none';
+            }
+
+            // Lógica da Imagem
+            const caminhoImg = btn.getAttribute('data-img');
+            const imgElement = document.getElementById('viewImagem');
+            const msgElement = document.getElementById('noImageMsg');
+
+            if (caminhoImg && caminhoImg !== 'null' && caminhoImg !== '') {
+                imgElement.src = '/uploads/' + caminhoImg;
+                imgElement.style.display = 'block';
+                msgElement.style.display = 'none';
+            } else {
+                imgElement.style.display = 'none';
+                msgElement.style.display = 'block';
+            }
+
+            // Abrir Modal
+            new bootstrap.Modal(document.getElementById('modalDetalhes')).show();
+        }
+
+        // NOVA FUNÇÃO: Exportar para Excel com colunas do banco de dados
+        function exportarParaExcel() {
+            // Obter dados das análises do Thymeleaf
+            const analises = /*[[${analises}]]*/ [];
+            
+            if (!analises || analises.length === 0) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            // Preparar dados no formato do banco
+            const dados = analises.map(analise => ({
+                'ID': analise.id || '',
+                'equipamento_id': analise.equipamento?.id || '',
+                'Equipamento': analise.equipamento?.nome || '',
+                'porque1': analise.porque1 || '',
+                'porque2': analise.porque2 || '',
+                'porque3': analise.porque3 || '',
+                'porque4': analise.porque4 || '',
+                'porque5': analise.porque5 || '',
+                'causaRaiz': analise.causaRaiz || '',
+                'descricao': analise.descricao || '',
+                'usuario_analise_id': analise.usuarioAnalise?.id || '',
+                'Usuario': analise.usuarioAnalise?.username || '',
+                'caminho_imagem': analise.caminhoImagem || '',
+                'dataInicioAvaria': formatarDataISO(analise.dataInicioAvaria),
+                'dataFimAvaria': formatarDataISO(analise.dataFimAvaria),
+                'mecanico_id': analise.mecanico?.id || '',
+                'Mecanico': analise.mecanico?.nome || '',
+                'subconjunto_id': analise.subconjunto?.id || '',
+                'Subconjunto': analise.subconjunto?.nome || '',
+                'dataAnalise': formatarDataISO(analise.dataAnalise) || formatarDataISO(new Date())
+            }));
+
+            // Criar worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(dados);
+
+            // Ajustar largura das colunas
+            const colunas = [
+                { wch: 10 }, // ID
+                { wch: 15 }, // equipamento_id
+                { wch: 25 }, // Equipamento
+                { wch: 30 }, // porque1
+                { wch: 30 }, // porque2
+                { wch: 30 }, // porque3
+                { wch: 30 }, // porque4
+                { wch: 30 }, // porque5
+                { wch: 30 }, // causaRaiz
+                { wch: 50 }, // descricao
+                { wch: 15 }, // usuario_analise_id
+                { wch: 20 }, // Usuario
+                { wch: 20 }, // caminho_imagem
+                { wch: 20 }, // dataInicioAvaria
+                { wch: 20 }, // dataFimAvaria
+                { wch: 15 }, // mecanico_id
+                { wch: 25 }, // Mecanico
+                { wch: 15 }, // subconjunto_id
+                { wch: 25 }, // Subconjunto
+                { wch: 20 }  // dataAnalise
+            ];
+            ws['!cols'] = colunas;
+
+            // Adicionar worksheet ao workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Análises 5 Porquês');
+
+            // Gerar arquivo Excel
+            const nomeArquivo = `analises_5_porques_${new Date().toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, nomeArquivo);
+        }
+
+        // Função auxiliar para formatar datas no padrão ISO (YYYY-MM-DD HH:MM:SS)
+        function formatarDataISO(data) {
+            if (!data) return '';
+            
+            try {
+                const dataObj = new Date(data);
+                if (isNaN(dataObj.getTime())) return '';
+                
+                const ano = dataObj.getFullYear();
+                const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+                const dia = String(dataObj.getDate()).padStart(2, '0');
+                const horas = String(dataObj.getHours()).padStart(2, '0');
+                const minutos = String(dataObj.getMinutes()).padStart(2, '0');
+                const segundos = String(dataObj.getSeconds()).padStart(2, '0');
+                
+                return `${ano}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
+            } catch (e) {
+                return '';
+            }
+        }
+    </script>
+</body>
+
+</html>

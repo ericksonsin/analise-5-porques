@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Gestão de Usuários')"></head>
+<style>
+    .card-form { border-radius: 15px; border: none; }
+    .btn-action { border-radius: 8px; font-weight: 600; }
+    
+    /* Layout Adaptativo: Esconde a tabela no mobile e os cards no desktop */
+    @media (max-width: 768px) {
+        .desktop-table-container { display: none; }
+        .mobile-cards-container { display: block; }
+    }
+    @media (min-width: 769px) {
+        .mobile-cards-container { display: none; }
+        .desktop-table-container { display: block; }
+    }
+    
+    .user-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-left: 5px solid #6c757d;
+    }
+    .user-card.active-user { border-left-color: #198754; }
+    
+    /* Ajuste para o DataTable não quebrar o layout */
+    .dataTables_wrapper { padding: 20px 0; }
+</style>
+<body class="bg-light">
+
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container mt-4 mb-5">
+        <div th:replace="fragments/messages :: mensagens"></div>
+
+        <div class="card shadow-sm card-form mb-4">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4 text-dark">
+                    <i class="fas fa-user-shield me-2 text-primary"></i>
+                    <span th:text="${usuario != null} ? 'Editar Usuário' : 'Cadastrar Usuário'"></span>
+                </h3>
+
+                <form th:action="@{/usuarios/salvar}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" th:value="${usuario != null} ? ${usuario.id} : ''" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-user"></i></span>
+                                <input type="text" name="username" class="form-control shadow-sm"
+                                    th:value="${usuario != null} ? ${usuario.username} : ''" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" class="form-control shadow-sm"
+                                    th:placeholder="${usuario != null} ? 'Deixe em branco para manter' : 'Digite a senha'"
+                                    th:required="${usuario == null}">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Perfil de Acesso</label>
+                            <select name="role" class="form-select shadow-sm">
+                                <option value="ROLE_ADMIN" th:selected="${usuario != null && usuario.role == 'ADMIN'}">ADMINISTRADOR</option>
+                                <option value="ROLE_OPERADOR" th:selected="${usuario != null && usuario.role == 'OPERADOR'}">OPERADOR</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">Status da Conta</label>
+                            <div class="form-check form-switch p-2 bg-white rounded border px-5 shadow-sm">
+                                <input class="form-check-input" type="checkbox" name="ativo" id="statusSwitch"
+                                    th:checked="${usuario == null || usuario.ativo}">
+                                <label class="form-check-label fw-bold ms-2" for="statusSwitch" id="statusLabel"
+                                    th:text="${usuario == null || usuario.ativo} ? 'Ativo' : 'Desativado'"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-success btn-action px-4 py-2 shadow-sm">
+                            <i class="fas fa-save me-2"></i> 
+                            <span th:text="${usuario != null} ? 'Atualizar Usuário' : 'Salvar Usuário'"></span>
+                        </button>
+                        <a th:if="${usuario != null}" th:href="@{/usuarios}" class="btn btn-outline-secondary btn-action px-4 py-2">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <h4 class="fw-bold mb-4 text-secondary"><i class="fas fa-users me-2"></i>Usuários Cadastrados</h4>
+
+        <div class="desktop-table-container">
+            <div class="card shadow-sm border-0 p-3">
+                <table id="tabela" class="table table-hover w-100">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Username</th>
+                            <th>Perfil</th>
+                            <th>Status</th>
+                            <th width="100">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${usuarios}">
+                            <td th:text="${user.id}"></td>
+                            <td class="fw-bold" th:text="${user.username}"></td>
+                            <td>
+                                <span th:classappend="${user.role == 'ADMIN'} ? 'bg-primary' : 'bg-info'" 
+                                      class="badge p-2" th:text="${user.role}"></span>
+                            </td>
+                            <td>
+                                <span th:classappend="${user.ativo} ? 'text-success' : 'text-danger'" class="fw-bold small text-uppercase">
+                                    <i class="fas" th:classappend="${user.ativo} ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                                    <span th:text="${user.ativo ? ' Ativo' : ' Inativo'}"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/usuarios/editar/{id}(id=${user.id})}" class="btn btn-warning btn-sm btn-action shadow-sm">
+                                    <i class="fas fa-user-edit">Editar</i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mobile-cards-container">
+            <div th:each="user : ${usuarios}" class="user-card shadow-sm" th:classappend="${user.ativo} ? 'active-user' : ''">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small text-muted" th:text="'#ID ' + ${user.id}"></div>
+                        <h5 class="fw-bold mb-1" th:text="${user.username}"></h5>
+                        <span class="badge mb-2" th:classappend="${user.role == 'ADMIN'} ? 'bg-primary' : 'bg-info'" th:text="${user.role}"></span>
+                        <div class="small">
+                            Status: <span th:text="${user.ativo ? 'Ativo' : 'Inativo'}" 
+                                         th:class="${user.ativo ? 'text-success fw-bold' : 'text-danger fw-bold'}"></span>
+                        </div>
+                    </div>
+                    <a th:href="@{/usuarios/editar/{id}(id=${user.id})}" class="btn btn-warning btn-sm p-2 shadow-sm">
+                        <i class="fas fa-user-edit fa-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+   
+</body>
+</html>

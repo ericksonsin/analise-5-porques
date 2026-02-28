@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Sistema Manutenção</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        /* Ajuste para os cards */
+        .card {
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 15px;
+            height: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        /* Cores customizadas para os ícones */
+        .bg-primary-soft {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+        }
+
+        .bg-success-soft {
+            background-color: #e6fcf5;
+            color: #20c997;
+        }
+
+        .bg-warning-soft {
+            background-color: #fff9db;
+            color: #f59f00;
+        }
+
+        .bg-info-soft {
+            background-color: #e3fafc;
+            color: #15aabf;
+        }
+
+        .btn-manage {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 10px;
+        }
+
+        /* Ajuste Navbar Mobile */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .user-info {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold">
+                <i class="fas fa-industry me-2"></i>LACTALIS CC
+            </span>
+
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3 d-none d-sm-inline user-info">
+                    <i class="far fa-user-circle me-1"></i> <span th:text="${usuarioLogado}"></span>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline">Sair</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3 class="fw-bold text-dark">Menu Principal</h3>
+                <p class="text-muted">Selecione uma categoria para gerenciar o sistema.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <div sec:authorize="hasAnyRole('ADMIN')" class="col-12 col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-primary-soft">
+                            <i class="fas fa-truck-pickup"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Equipamentos</h5>
+                        <p class="card-text text-muted small">Gerencie a frota e ativos cadastrados.</p>
+                        <a th:href="@{/equipamentos}" class="btn btn-primary btn-manage mt-auto">Gerenciar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div sec:authorize="hasAnyRole('ADMIN')" class="col-12 col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-info-soft">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Subconjuntos</h5>
+                        <p class="card-text text-muted small">Partes específicas dos equipamentos.</p>
+                        <a th:href="@{/subconjuntos}" class="btn btn-info text-white btn-manage mt-auto">Gerenciar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div sec:authorize="hasAnyRole('ADMIN')" class="col-12 col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-secondary-soft" style="background-color: #f1f3f5; color: #495057;">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Usuários</h5>
+                        <p class="card-text text-muted small">Controle de acessos e permissões.</p>
+                        <a th:href="@{/usuarios}" class="btn btn-secondary btn-manage mt-auto">Gerenciar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div sec:authorize="hasAnyRole('ADMIN', 'OPERADOR')" class="col-12 col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3 border-start border-success border-4">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-success-soft">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Novo Registro</h5>
+                        <p class="card-text text-muted small">Abrir uma nova ocorrência de falha.</p>
+                        <a th:href="@{/problema/novo}" class="btn btn-success btn-manage mt-auto">Abrir Ocorrência</a>
+                    </div>
+                </div>
+            </div>
+
+            <div sec:authorize="hasAnyRole('ADMIN', 'OPERADOR')" class="col-12 col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-warning-soft">
+                            <i class="fas fa-list-check"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Histórico</h5>
+                        <p class="card-text text-muted small">Visualizar e editar problemas registrados.</p>
+                        <a th:href="@{/problema/listar-problemas}"
+                            class="btn btn-warning btn-manage mt-auto text-dark">Visualizar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div sec:authorize="hasAnyRole('ADMIN')" class="col-12 col-sm-6 col-lg-4">
+            <div class="card shadow-sm p-3">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-box bg-primary-soft" style="background-color: #e7f5ff; color: #228be6;">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Mecânicos</h5>
+                    <p class="card-text text-muted small">Cadastro da equipe de manutenção.</p>
+                    <a th:href="@{/mecanicos/novo}" class="btn btn-outline-primary btn-manage mt-auto">Cadastrar
+                        Equipe</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

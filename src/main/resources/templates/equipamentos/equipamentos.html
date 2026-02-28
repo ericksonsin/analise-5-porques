@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/head :: head('Equipamentos')"></head>
+
+<body>
+
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container mt-4">
+
+        <div th:replace="fragments/messages :: mensagens"></div>
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0"
+                    th:text="${equipamento != null} ? 'Editar Equipamento' : 'Cadastrar Equipamento'">
+                </h3>
+
+            </div>
+            <div class="card-body">
+                <form th:action="@{/equipamentos/salvar}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" th:value="${equipamento != null} ? ${equipamento.id} : ''" />
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Nome do Equipamento</label>
+                            <input type="text" name="nome" class="form-control" placeholder="Ex: Máquina de Envase"
+                                th:value="${equipamento != null} ? ${equipamento.nome} : ''" required>
+
+                        </div>
+
+                        <div class="col-md-12 mb-4">
+                            <label class="form-label fw-bold">Subconjuntos Vinculados</label>
+                            <select name="subconjuntosIds" multiple class="form-select select2-multiple">
+                                <option th:each="sub : ${subconjuntos}" th:value="${sub.id}" th:text="${sub.nome}"
+                                    th:selected="${equipamento != null} ?
+            ${equipamento.subconjuntos.contains(sub)} : false">
+                                </option>
+
+                            </select>
+                            <div class="form-text">Você pode pesquisar e selecionar múltiplos itens.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/equipamentos}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success px-4">Salvar Equipamento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="card shadow mb-5">
+            <div class="card-header bg-dark text-white">
+                <h4 class="card-title mb-0">Equipamentos Cadastrados</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tabela" class="table table-striped table-bordered mt-2">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50">ID</th>
+                                <th>Nome do Equipamento</th>
+                                <th>Subconjuntos</th>
+                                <th width="120">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="equip : ${equipamentos}">
+                                <td th:text="${equip.id}"></td>
+                                <td th:text="${equip.nome}" class="fw-bold"></td>
+                                <td>
+                                    <span th:each="sub : ${equip.subconjuntos}" class="badge bg-info text-dark me-1"
+                                        th:text="${sub.nome}">
+                                    </span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/equipamentos/editar/{id}(id=${equip.id})}"
+                                        class="btn btn-warning btn-sm">
+                                        Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+</body>
+
+</html>

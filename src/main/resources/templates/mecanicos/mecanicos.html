@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Cadastro de Mecânicos')"></head>
+<style>
+    .card-form { border-radius: 15px; border: none; }
+    .btn-action { border-radius: 8px; font-weight: 600; }
+    
+    /* Layout Adaptativo */
+    @media (max-width: 768px) {
+        .desktop-table-container { display: none; }
+        .mobile-cards-container { display: block; }
+    }
+    @media (min-width: 769px) {
+        .mobile-cards-container { display: none; }
+        .desktop-table-container { display: block; }
+    }
+    
+    .mecanico-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-left: 5px solid #0d6efd;
+    }
+
+    .dataTables_wrapper { padding: 15px 0; }
+</style>
+<body class="bg-light">
+
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container mt-4 mb-5">
+        <div th:replace="fragments/messages :: mensagens"></div>
+
+        <div class="card shadow-sm card-form mb-4">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4 text-dark">
+                    <i class="fas fa-wrench me-2 text-primary"></i>
+                    <span th:text="${mecanico.id != null} ? 'Editar Mecânico' : 'Cadastrar Mecânico'"></span>
+                </h3>
+
+                <form th:action="@{/mecanicos/salvar}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" th:value="${mecanico.id}">
+
+                    <div class="row align-items-end">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-bold">Nome do Mecânico</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-user-gear"></i></span>
+                                <input type="text" name="nome" class="form-control form-control-lg shadow-sm" 
+                                       th:value="${mecanico.nome}" 
+                                       placeholder="Digite o nome completo" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <button type="submit" class="btn btn-success btn-lg btn-action w-100 shadow-sm">
+                                <i class="fas fa-save me-2"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                    <div th:if="${mecanico.id != null}" class="mt-2">
+                        <a th:href="@{/mecanicos/novo}" class="btn btn-outline-secondary btn-sm">Cancelar Edição</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <h4 class="fw-bold mb-4 text-secondary"><i class="fas fa-clipboard-list me-2"></i>Equipe Técnica</h4>
+
+        <div class="desktop-table-container">
+            <div class="card shadow-sm border-0 p-3">
+                <table id="tabela" class="table table-hover w-100">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="80">ID</th>
+                            <th>Nome Completo</th>
+                            <th width="120" class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="m : ${mecanicos}">
+                            <td th:text="${m.id}" class="text-muted"></td>
+                            <td th:text="${m.nome}" class="fw-bold"></td>
+                            <td class="text-center">
+                                <a th:href="@{/mecanicos/editar/{id}(id=${m.id})}" 
+                                   class="btn btn-warning btn-sm btn-action shadow-sm">
+                                    <i class="fas fa-edit me-1"></i> Editar
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mobile-cards-container">
+            <div th:each="m : ${mecanicos}" class="mecanico-card shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small text-muted" th:text="'#ID ' + ${m.id}"></div>
+                        <h5 class="fw-bold mb-0" th:text="${m.nome}"></h5>
+                    </div>
+                    <a th:href="@{/mecanicos/editar/{id}(id=${m.id})}" 
+                       class="btn btn-warning btn-sm p-2 shadow-sm">
+                        <i class="fas fa-edit fa-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+</body>
+</html>

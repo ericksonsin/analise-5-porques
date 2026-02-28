@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm" th:fragment="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/home}">
+                <i class="fas fa-tools me-2 text-warning"></i>LACTALIS CC
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/home}"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/equipamentos}">Equipamentos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/subconjuntos}">Subconjuntos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/usuarios}">Usuários</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/mecanicos/novo}">Mecânicos</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center border-top border-secondary pt-2 pt-lg-0 border-lg-0">
+                    <span class="text-white-50 me-3 d-none d-lg-inline">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span th:text="${usuarioLogado}"></span>
+                    </span>
+
+                    <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+</body>
+
+</html>
