@@ -2,6 +2,7 @@ package com.example.demo.Controller;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
@@ -22,10 +23,14 @@ import com.example.demo.Repository.EquipamentoRepository;
 import com.example.demo.Repository.MecanicoRepository;
 import com.example.demo.Repository.SubconjuntoRepository;
 import com.example.demo.Repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 
 @Controller
 @RequestMapping("/problema")
 public class ProblemaController {
+
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
     @Autowired
     private EquipamentoRepository equipamentoRepository;
@@ -107,8 +112,17 @@ public class ProblemaController {
 
         if (!foto.isEmpty()) {
             String nomeArquivo = UUID.randomUUID() + "_" + foto.getOriginalFilename();
-            Files.copy(foto.getInputStream(), Paths.get("uploads").resolve(nomeArquivo),
+            Path uploadPath = Paths.get(uploadDir);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Files.copy(
+                    foto.getInputStream(),
+                    uploadPath.resolve(nomeArquivo),
                     StandardCopyOption.REPLACE_EXISTING);
+
             analiseDB.setCaminhoImagem(nomeArquivo);
         }
 
