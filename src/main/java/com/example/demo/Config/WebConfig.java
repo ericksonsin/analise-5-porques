@@ -9,22 +9,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import java.nio.file.Path;
 
-
 @Configuration
-public class WebConfig implements WebMvcConfigurer{
-    
+public class WebConfig implements WebMvcConfigurer {
+
     @Bean
     ForwardedHeaderFilter forwardedHeaderFilter() {
         return new ForwardedHeaderFilter();
     }
 
-      @Override
+    @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
-        Path uploadDir = Paths.get("uploads");
-        String uploadPath = uploadDir.toFile().getAbsolutePath();
-
+        // Apontando diretamente para o volume montado no Easypanel
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadPath + "/");
+                .addResourceLocations("file:/opt/uploads/");
     }
 }
