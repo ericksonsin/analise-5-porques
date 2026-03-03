@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="fragments/head :: head('Histórico de Análises')"></head>
-<style>
+
+<!-- <style>
     .text-truncate-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -52,7 +53,70 @@
             display: none;
         }
     }
+</style> -->
+
+<style>
+    @media print {
+        /* 1. Esconde tudo por padrão */
+        body * {
+            visibility: hidden !important;
+        }
+
+        /* 2. Reseta o corpo para não interferir */
+        body, html {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        /* 3. Isola o conteúdo do modal como a única coisa na página */
+        #modalDetalhes {
+            /* Tira o modal da sua posição original e o coloca no topo da página */
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important; /* Permite que o conteúdo interno flua para outras páginas */
+            visibility: visible !important; /* Torna o modal visível */
+        }
+
+        /* 4. Garante que todos os filhos do modal sejam visíveis */
+        #modalDetalhes * {
+            visibility: visible !important;
+        }
+
+        /* 5. Zera os contêineres do Bootstrap para não adicionarem espaço ou transformações */
+        .modal-dialog, .modal-content {
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        /* 6. Controla a quebra de página para evitar cortes estranhos */
+        .timeline-steps, #causaRaizBox, .row.mb-4 {
+            page-break-inside: avoid !important; /* Evita que esses blocos quebrem no meio */
+        }
+
+        /* 7. Esconde elementos desnecessários */
+        .modal-backdrop, .modal-header .btn-close, .modal-footer {
+            display: none !important;
+        }
+
+        /* 8. Configuração da página */
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+    }
 </style>
+
+
 
 <body class="bg-light">
 
@@ -126,7 +190,9 @@
                      data-p4=${analise.porque4},
                      data-p5=${analise.porque5},
                      data-causa=${analise.causaRaiz},
-                     data-img=${analise.caminhoImagem}" onclick="exibirDetalhes(this)">
+                     data-img=${analise.caminhoImagem},
+                     data-codParada=${analise.codParada},
+        data-dataAcao=${#temporals.format(analise.dataAcao, 'dd/MM/yy HH:mm')}" onclick="exibirDetalhes(this)">
                                             <i class="fas fa-eye"></i> Detalhes
                                         </button>
 
@@ -134,6 +200,16 @@
                                             class="btn btn-sm btn-warning" title="Editar Análise">
                                             <i class="fas fa-edit"></i> Editar
                                         </a>
+
+                                        <!-- Excluir (Somente ADMIN) -->
+                                        <form sec:authorize="hasAnyRole('ADMIN')"
+                                            th:action="@{/problema/excluir/{id}(id=${analise.id})}" method="post"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este registro?')">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash">Excluir</i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -160,6 +236,8 @@
                             <p class="mb-1"><strong>Subconjunto:</strong> <span id="viewSubconjunto"></span></p>
                             <p class="mb-1"><strong>Mecânico:</strong> <span id="viewMecanico"></span></p>
                             <p class="mb-1"><strong>Período:</strong> <span id="viewPeriodo"></span></p>
+                            <p class="mb-1"><strong>Cod Parada:</strong> <span id="viewCodParada"></span></p>
+                            <p class="mb-1"><strong>Data Ação:</strong> <span id="viewDataAcao"></span></p>
                             <hr>
                             <h6 class="text-muted text-uppercase small fw-bold">Descrição do Problema</h6>
                             <p id="viewDescricao" class="bg-light p-2 rounded border italic text-muted"></p>
@@ -197,7 +275,9 @@
                         style="display: none; background-color: #f0fff4;">
                         <h6 class="text-success fw-bold"><i class="fas fa-bullseye me-2"></i>Causa Raiz Identificada:
                         </h6>
-                        <p id="viewCausaRaiz" class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;"></p>
+                        <p id="viewCausaRaiz" class="mb-0 fw-bold text-dark"
+                            style="font-size: 1.1rem; word-wrap: break-word;"></p>
+
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -234,6 +314,8 @@
             setText('viewMecanico', getAttr('mecanico'));
             setText('viewDescricao', getAttr('descricao'));
             setText('viewPeriodo', `De ${getAttr('inicio')} até ${getAttr('fim')}`);
+            setText('viewCodParada', getAttr('codParada'));
+            setText('viewDataAcao', getAttr('dataAcao'));
 
             // 5 Porquês
             setText('viewP1', getAttr('p1'));
@@ -273,8 +355,8 @@
         // NOVA FUNÇÃO: Exportar para Excel com colunas do banco de dados
         function exportarParaExcel() {
             // Obter dados das análises do Thymeleaf
-            const analises = /*[[${analises}]]*/ [];
-            
+            const analises = /*[[${analises}]]*/[];
+
             if (!analises || analises.length === 0) {
                 alert('Não há dados para exportar.');
                 return;
@@ -285,6 +367,8 @@
                 'ID': analise.id || '',
                 'equipamento_id': analise.equipamento?.id || '',
                 'Equipamento': analise.equipamento?.nome || '',
+                'codParada': analise.codParada || '',
+                'dataAcao': formatarDataISO(analise.dataAcao),
                 'porque1': analise.porque1 || '',
                 'porque2': analise.porque2 || '',
                 'porque3': analise.porque3 || '',
@@ -313,6 +397,8 @@
                 { wch: 10 }, // ID
                 { wch: 15 }, // equipamento_id
                 { wch: 25 }, // Equipamento
+                { wch: 15 }, // codParada
+                { wch: 20 }, // dataAtuacao
                 { wch: 30 }, // porque1
                 { wch: 30 }, // porque2
                 { wch: 30 }, // porque3
@@ -337,25 +423,25 @@
             XLSX.utils.book_append_sheet(wb, ws, 'Análises 5 Porquês');
 
             // Gerar arquivo Excel
-            const nomeArquivo = `analises_5_porques_${new Date().toISOString().slice(0,10)}.xlsx`;
+            const nomeArquivo = `analises_5_porques_${new Date().toISOString().slice(0, 10)}.xlsx`;
             XLSX.writeFile(wb, nomeArquivo);
         }
 
         // Função auxiliar para formatar datas no padrão ISO (YYYY-MM-DD HH:MM:SS)
         function formatarDataISO(data) {
             if (!data) return '';
-            
+
             try {
                 const dataObj = new Date(data);
                 if (isNaN(dataObj.getTime())) return '';
-                
+
                 const ano = dataObj.getFullYear();
                 const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
                 const dia = String(dataObj.getDate()).padStart(2, '0');
                 const horas = String(dataObj.getHours()).padStart(2, '0');
                 const minutos = String(dataObj.getMinutes()).padStart(2, '0');
                 const segundos = String(dataObj.getSeconds()).padStart(2, '0');
-                
+
                 return `${ano}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
             } catch (e) {
                 return '';

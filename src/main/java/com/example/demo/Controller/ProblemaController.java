@@ -127,7 +127,7 @@ public class ProblemaController {
         }
 
         analiseRepository.save(analiseDB);
-        redirectAttributes.addFlashAttribute("sucesso", "Registro processado com sucesso!");
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Registro processado com sucesso!");
         return "redirect:/problema/listar-problemas";
     }
 
@@ -138,4 +138,27 @@ public class ProblemaController {
                 .map(e -> e.getSubconjuntos())
                 .orElse(Collections.emptyList());
     }
+
+    @PostMapping("/excluir/{id}")
+    public String excluir(@PathVariable Long id,
+            RedirectAttributes redirectAttributes) {
+
+        Analise5Porques analise = analiseRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("ID inválido: " + id));
+
+        if (analise.getCaminhoImagem() != null && !analise.getCaminhoImagem().isEmpty()) {
+            try {
+                Path caminhoImagem = Paths.get(uploadDir).resolve(analise.getCaminhoImagem());
+                Files.deleteIfExists(caminhoImagem);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        analiseRepository.delete(analise);
+
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Registro excluído com sucesso!");
+        return "redirect:/problema/listar-problemas";
+    }
+
 }

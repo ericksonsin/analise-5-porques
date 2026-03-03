@@ -41,7 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/login", "/css/**", "/js/**", "/uploads/**", "/favicon.ico").permitAll()
                 .antMatchers("/home")
                 .hasAnyRole("ADMIN", "OPERADOR")
-                .antMatchers("/problema/**", "/problema/listar-problemas")
+                .antMatchers("/problema/**", "/problema/listar-problemas", "/problema/excluir/**")
                 .hasAnyRole("ADMIN", "OPERADOR")
                 // ADMIN TEM ACESSO AO RESTO
                 .anyRequest().hasRole("ADMIN")
