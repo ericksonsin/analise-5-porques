@@ -77,6 +77,27 @@ public class Analise5Porques {
 
     private LocalDateTime dataAnalise = LocalDateTime.now();
 
+    private String codParada;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime dataAcao;
+
+    public String getCodParada() {
+        return codParada;
+    }
+
+    public void setCodParada(String codParada) {
+        this.codParada = codParada;
+    }
+
+    public LocalDateTime getDataAcao() {
+        return dataAcao;
+    }
+
+    public void setDataAcao(LocalDateTime dataAcao) {
+        this.dataAcao = dataAcao;
+    }
+
     public Long getId() {
         return id;
     }

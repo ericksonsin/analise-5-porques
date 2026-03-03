@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="fragments/head :: head('Análise Técnica')"></head>
+
 <body class="bg-light">
     <div th:replace="fragments/navbar :: navbar"></div>
 
@@ -12,9 +14,9 @@
             <h2 class="mb-0" th:text="${analise.id == null ? 'Novo Registro' : 'Editar Análise'}">Análise</h2>
         </div>
 
-        <form th:action="${analise.id == null ? '/problema/salvar' : '/problema/editar/' + analise.id}" 
-              method="post" enctype="multipart/form-data" th:object="${analise}">
-            
+        <form th:action="${analise.id == null ? '/problema/salvar' : '/problema/editar/' + analise.id}" method="post"
+            enctype="multipart/form-data" th:object="${analise}">
+
             <input type="hidden" th:field="*{id}" />
 
             <div class="card shadow-sm mb-4">
@@ -26,7 +28,8 @@
                             <select id="equipamentoSelect" name="equipamentoId" class="form-select shadow-sm" required>
                                 <option value="">Selecione...</option>
                                 <option th:each="e : ${equipamentos}" th:value="${e.id}" th:text="${e.nome}"
-                                        th:selected="${analise.equipamento != null && e.id == analise.equipamento.id}"></option>
+                                    th:selected="${analise.equipamento != null && e.id == analise.equipamento.id}">
+                                </option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -34,7 +37,8 @@
                             <select id="subconjuntoSelect" name="subconjuntoId" class="form-select shadow-sm" required>
                                 <option value="">Selecione o subconjunto...</option>
                                 <option th:each="s : ${subconjuntos}" th:value="${s.id}" th:text="${s.nome}"
-                                        th:selected="${analise.subconjunto != null && s.id == analise.subconjunto.id}"></option>
+                                    th:selected="${analise.subconjunto != null && s.id == analise.subconjunto.id}">
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -45,25 +49,30 @@
                 <div class="card-body">
                     <h5 class="section-title border-start border-primary border-4 ps-2 mb-3">Dados da Avaria</h5>
                     <div class="row">
-                        <div class="col-sm-6 mb-3">
+                        <div class="col-sm-4 mb-3">
                             <label class="form-label fw-bold">Início</label>
                             <input type="datetime-local" th:field="*{dataInicioAvaria}" class="form-control" required>
                         </div>
-                        <div class="col-sm-6 mb-3">
+                        <div class="col-sm-4 mb-3">
                             <label class="form-label fw-bold">Fim</label>
-                            <input type="datetime-local" th:field="*{dataFimAvaria}" class="form-control" required>
+                            <input type="datetime-local" th:field="*{dataFimAvaria}" class="form-control">
+                        </div>
+                        <div class="col-sm-4 mb-3">
+                            <label class="form-label fw-bold">Cod Parada</label>
+                            <input type="text" th:field="*{codParada}" class="form-control">
                         </div>
                         <div class="col-12 mb-3">
                             <label class="form-label fw-bold">Mecânico Responsável</label>
                             <select name="mecanicoId" class="form-select" required>
                                 <option value="">Selecione...</option>
                                 <option th:each="m : ${mecanicos}" th:value="${m.id}" th:text="${m.nome}"
-                                        th:selected="${analise.mecanico != null && m.id == analise.mecanico.id}"></option>
+                                    th:selected="${analise.mecanico != null && m.id == analise.mecanico.id}"></option>
                             </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Descrição do Problema</label>
-                            <textarea th:field="*{descricao}" class="form-control" rows="3" required placeholder="O que aconteceu?"></textarea>
+                            <textarea th:field="*{descricao}" class="form-control" rows="3" required
+                                placeholder="O que aconteceu?"></textarea>
                         </div>
                     </div>
                 </div>
@@ -100,24 +109,32 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="section-title border-start border-success border-4 ps-2 mb-3">Conclusão</h5>
-                    
+
                     <div class="form-check form-switch mb-3 p-3 bg-light rounded border">
                         <input class="form-check-input ms-0 me-2" type="checkbox" id="checkCausaRaiz"
-                               th:checked="${analise.causaRaiz != null && !analise.causaRaiz.empty}">
+                            th:checked="${analise.causaRaiz != null && !analise.causaRaiz.empty}">
                         <label class="form-check-label fw-bold" for="checkCausaRaiz">Identificou a Causa Raiz?</label>
                     </div>
 
-                    <div id="containerCausaRaiz" class="mb-4" th:style="${analise.causaRaiz != null && !analise.causaRaiz.empty ? 'display:block' : 'display:none'}">
-                        <textarea th:field="*{causaRaiz}" class="form-control border-primary shadow-sm" rows="3" placeholder="Causa fundamental..."></textarea>
+                    <div id="containerCausaRaiz" class="mb-4"
+                        th:style="${analise.causaRaiz != null && !analise.causaRaiz.empty ? 'display:block' : 'display:none'}">
+                        <textarea th:field="*{causaRaiz}" class="form-control border-primary shadow-sm" rows="3"
+                            placeholder="Causa fundamental..."></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold"><i class="fas fa-camera me-1"></i>Foto da Ocorrência</label>
-                        <input type="file" name="foto" id="fotoInput" accept="image/*" capture="environment" class="form-control shadow-sm">
+                        <input type="file" name="foto" id="fotoInput" accept="image/*" capture="environment"
+                            class="form-control shadow-sm">
                         <div class="text-center">
-                            <img id="preview" class="img-fluid mt-3 rounded shadow" style="display:none; max-height:400px;">
+                            <img id="preview" class="img-fluid mt-3 rounded shadow"
+                                style="display:none; max-height:400px;">
                         </div>
                     </div>
+                
+                <div class="col-sm-6 mb-3">
+                    <label class="form-label fw-bold">Data da Ação</label>
+                    <input type="datetime-local" th:field="*{dataAcao}" class="form-control" required>
                 </div>
             </div>
 
@@ -137,7 +154,7 @@
         document.getElementById("equipamentoSelect").addEventListener("change", function () {
             let id = this.value;
             let select = document.getElementById("subconjuntoSelect");
-            if(!id) {
+            if (!id) {
                 select.innerHTML = '<option value="">Aguardando equipamento...</option>';
                 return;
             }
@@ -172,28 +189,29 @@
         document.addEventListener("DOMContentLoaded", function () {
             const config = [
                 { input: 'descricao', label: 'label1', text: '1º Por quê?' },
-                { input: 'porque1',   label: 'label2', text: '2º Por quê?' },
-                { input: 'porque2',   label: 'label3', text: '3º Por quê?' },
-                { input: 'porque3',   label: 'label4', text: '4º Por quê?' },
-                { input: 'porque4',   label: 'label5', text: '5º Por quê?' }
+                { input: 'porque1', label: 'label2', text: '2º Por quê?' },
+                { input: 'porque2', label: 'label3', text: '3º Por quê?' },
+                { input: 'porque3', label: 'label4', text: '4º Por quê?' },
+                { input: 'porque4', label: 'label5', text: '5º Por quê?' }
             ];
 
             config.forEach((item) => {
                 const inputEl = document.getElementById(item.input);
                 const labelEl = document.getElementById(item.label);
-                
-                if(inputEl && labelEl) {
+
+                if (inputEl && labelEl) {
                     const updateLabel = () => {
                         const val = inputEl.value.trim();
-                        labelEl.innerText = val !== "" 
+                        labelEl.innerText = val !== ""
                             ? `${item.text} (Sobre: ${val.substring(0, 25)}...)`
                             : item.text;
                     };
                     inputEl.addEventListener("input", updateLabel);
-                    updateLabel(); 
+                    updateLabel();
                 }
             });
         });
     </script>
 </body>
+
 </html>
