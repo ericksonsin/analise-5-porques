@@ -127,7 +127,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="mb-0"><i class="fas fa-microscope me-2 text-primary"></i>Análises Técnicas</h3>
-            <div>
+         <div class="d-flex flex-wrap gap-2">
                 <!-- Botão de Exportar Excel (NOVO) -->
                 <button class="btn btn-success shadow-sm me-2" onclick="exportarParaExcel()">
                     <i class="fas fa-file-excel"></i> <span class="hide-mobile">Exportar Excel</span>
@@ -176,7 +176,7 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group">
+                                    <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
                                         <button class="btn btn-sm btn-info text-white" th:attr="data-usuario=${analise.usuarioAnalise?.username},
                      data-equipamento=${analise.equipamento?.nome},
                      data-subconjunto=${analise.subconjunto?.nome},
