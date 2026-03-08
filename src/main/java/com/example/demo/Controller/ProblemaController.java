@@ -46,16 +46,19 @@ public class ProblemaController {
     @GetMapping("/listar-problemas")
     public String listar(Model model, Authentication authentication) {
 
-        boolean isAdmin = authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        List<Analise5Porques> analises = analiseRepository.findAll();
+        model.addAttribute("analises", analises);
 
-        if (isAdmin) {
-            model.addAttribute("analises", analiseRepository.findAll());
-        } else {
-            model.addAttribute("analises",
-                    analiseRepository.findByUsuarioAnaliseUsername(authentication.getName()));
-        }
+        // boolean isAdmin = authentication.getAuthorities()
+        //         .stream()
+        //         .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // if (isAdmin) {
+        //     model.addAttribute("analises", analiseRepository.findAll());
+        // } else {
+        //     model.addAttribute("analises",
+        //             analiseRepository.findByUsuarioAnaliseUsername(authentication.getName()));
+        // }
 
         return "problema/problema-lista";
     }

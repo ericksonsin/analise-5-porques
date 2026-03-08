@@ -10,6 +10,7 @@
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
             $(document).ready(function () {
@@ -31,10 +32,12 @@
                 if ($('#tabela').length > 0) {
                     $('#tabela').DataTable({
                         language: {
-                            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+                            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json",
+                            emptyTable: "Nenhum registro encontrado."
                         },
                         pageLength: 5,
-                        destroy: true
+                        destroy: true,
+                        autoWidth: false
                     });
                     console.log("DataTable ativado.");
                 }

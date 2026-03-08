@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <div th:replace="fragments/head :: head(${turno.id == null} ? 'Novo Turno' : 'Editar Turno' )"></div>
+</head>
+
+<body class="bg-light">
+    <div th:replace="fragments/navbar :: navbar"></div>
+    <div class="container mt-4 mb-5">
+        <div th:replace="fragments/messages :: mensagens"></div>
+
+        <!-- 1. FORMULÁRIO DINÂMICO (CRIAR/EDITAR) -->
+        <div class="card shadow-sm border-0 mb-5">
+            <div class="card-header" th:classappend="${turno.id == null} ? 'bg-primary text-white' : 'bg-warning text-dark'">
+                <h5 class="mb-0">
+                    <i class="fas" th:classappend="${turno.id == null} ? 'fa-plus-circle' : 'fa-edit'"></i>
+                    <!-- Título dinâmico -->
+                    <span th:text="${turno.id == null} ? 'Criar Novo Turno' : 'Editar Turno'"></span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Action do formulário dinâmico -->
+                <form th:action="${turno.id == null} ? @{/fiabilidade/salvar} : @{/fiabilidade/atualizar/{id}(id=${turno.id})}" method="post" th:object="${turno}">
+                    <input type="hidden" th:field="*{status}" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="data" class="form-label fw-bold">Data</label>
+                            <input type="date" class="form-control" id="data" th:field="*{data}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="equipamento" class="form-label fw-bold">Equipamento</label>
+                            <select class="form-select" id="equipamento" th:field="*{equipamento}" required>
+                                <option value="">Selecione...</option>
+                                <option th:each="e : ${todosEquipamentos}" th:value="${e.id}" th:text="${e.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="meta" class="form-label">Meta de Produção</label>
+                            <input type="number" class="form-control" id="meta" th:field="*{metaProducao}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="inicio" class="form-label">Hora Início</label>
+                            <input type="time" class="form-control" id="inicio" th:field="*{horaInicio}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="fim" class="form-label">Hora Fim</label>
+                            <input type="time" class="form-control" id="fim" th:field="*{horaFim}" required>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-end">
+                        <a th:href="@{/fiabilidade/novo}" class="btn btn-secondary me-2">Cancelar</a>
+                        <!-- Botão dinâmico -->
+                        <button type="submit" class="btn" th:classappend="${turno.id == null} ? 'btn-primary' : 'btn-warning'">
+                            <i class="fas fa-save me-1"></i>
+                            <span th:text="${turno.id == null} ? 'Criar' : 'Salvar Alterações'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. TABELA DE TURNOS EXISTENTES (sem alterações) -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Turnos Cadastrados</h5>
+            </div>
+            <div class="table-responsive">
+                <table id="tabela" class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Data</th>
+                            <th>Equipamento</th>
+                            <th>Meta</th>
+                            <th>Status</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="t : ${listaDeTurnos}">
+                            <td th:text="${#temporals.format(t.data, 'dd/MM/yyyy')}"></td>
+                            <td class="fw-bold" th:text="${t.equipamento.nome}"></td>
+                            <td th:text="${t.metaProducao}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${t.status.name() == 'ABERTO'} ? 'bg-success' : 'bg-secondary'" th:text="${t.status.name()}"></span>
+                            </td>
+                            <td class="text-center">
+                                <a th:href="@{/fiabilidade/editar/{id}(id=${t.id})}" class="btn btn-warning btn-sm" title="Editar Turno"><i class="fas fa-edit">Editar</i></a>
+                                 <form sec:authorize="hasAnyRole('ADMIN')" th:action="@{/fiabilidade/excluir/{id}(id=${t.id})}" method="post" style="display:inline;" onsubmit="return confirm('Atenção! Excluir um turno também removerá todos os seus registros de produção. Deseja continuar?');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Excluir Turno"><i class="fas fa-trash">Excluir</i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div th:replace="fragments/scripts :: scripts"></div>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/head :: head('Apontamento de Produção' )"></head>
+
+<body class="bg-light">
+    <div th:replace="fragments/navbar :: navbar"></div>
+    <div class="container mt-4 mb-5">
+        <div th:replace="fragments/messages :: mensagens"></div>
+
+        <!-- 1. FILTROS -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <form th:action="@{/fiabilidade/apontamento}" method="get" class="row g-3 align-items-end">
+                    <input type="hidden" name="editId" th:if="${novoRegistro.id != null}" th:value="${novoRegistro.id}" />
+                    <!-- apontamento.html -->
+
+                    <div class="col-md-5">
+                        <label for="equipamentoId" class="form-label">Equipamento</label>
+                        <!-- 👇 CORREÇÃO APLICADA AQUI 👇 -->
+                        <select id="equipamentoId" name="equipamentoId" class="form-select">
+                            <option value="">Selecione um equipamento</option>
+                            <option th:each="e : ${todosEquipamentos}" th:value="${e.id}" th:text="${e.nome}"
+                                th:selected="${e.id == equipamentoSelecionado}">
+                            </option>
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-5">
+                        <label for="data" class="form-label">Data da produção</label>
+                        <input type="date" id="data" name="data" class="form-control"
+                            th:value="${#temporals.format(dataSelecionada, 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i>
+                            Buscar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. PAINEL DE DADOS (só aparece se um turno for encontrado) -->
+        <div th:if="${fiabilidade}">
+            <!-- Resumo do Turno -->
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Resumo do Turno</span>
+                    <span class="badge"
+                        th:classappend="${fiabilidade.status.name() == 'ABERTO'} ? 'bg-success' : 'bg-secondary'"
+                        th:text="${fiabilidade.status.name()}"></span>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Equipamento</h6>
+                            <h5 class="text-primary" th:text="${fiabilidade.equipamento.nome}"></h5>
+                        </div>
+                        <div class="col-md-2">
+                            <h6 class="text-muted">Meta</h6>
+                            <h4 th:text="${fiabilidade.metaProducao}"></h4>
+                        </div>
+                        <div class="col-md-2">
+                            <h6 class="text-muted">Produzido</h6>
+                            <h4 class="text-success" th:text="${produzido}"></h4>
+                        </div>
+                        <div class="col-md-2">
+                            <h6 class="text-muted">Faltando</h6>
+                            <h4 class="text-danger" th:text="${faltando}"></h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Fiabilidade</h6>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                    th:style="'width:' + ${fiabilidadePercentual} + '%'"
+                                    th:text="${#numbers.formatDecimal(fiabilidadePercentual,1,1)} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Registro (só aparece se o turno estiver ABERTO) -->
+            <!-- FORMULÁRIO DE REGISTRO DINÂMICO (CRIAR/EDITAR) -->
+            <div th:if="${fiabilidade.status.name() == 'ABERTO'}" class="card shadow-sm border-0 mb-3">
+                <div class="card-header"
+                    th:classappend="${novoRegistro.id == null} ? 'bg-primary text-white' : 'bg-warning text-dark'">
+                    <h5 class="mb-0">
+                        <i class="fas" th:classappend="${novoRegistro.id == null} ? 'fa-plus-circle' : 'fa-edit'"></i>
+                        <span th:text="${novoRegistro.id == null} ? 'Registrar Produção' : 'Editar Registro'"></span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Action do formulário dinâmico -->
+                    <form
+                        th:action="${novoRegistro.id == null} ? @{/fiabilidade/registrar} : @{/fiabilidade/registro/atualizar/{id}(id=${novoRegistro.id})}"
+                        method="post" th:object="${novoRegistro}">
+                        <input type="hidden" name="fiabilidadeId" th:value="${fiabilidade.id}">
+                        <div class="row align-items-end">
+                            <div class="col-md-4">
+                                <label>Data do Apontamento</label>
+                                <input type="date" class="form-control" th:field="*{dataApontamento}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Hora</label>
+                                <input type="time" class="form-control" th:field="*{horaRegistro}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Quantidade</label>
+                                <input type="number" class="form-control" th:field="*{quantidade}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <!-- Botão dinâmico -->
+                                <button type="submit" class="btn w-100"
+                                    th:classappend="${novoRegistro.id == null} ? 'btn-success' : 'btn-warning'">
+                                    <i class="fas"
+                                        th:classappend="${novoRegistro.id == null} ? 'fa-plus' : 'fa-save'"></i>
+                                    <span th:text="${novoRegistro.id == null} ? 'Registrar' : 'Salvar'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TABELA DE REGISTROS COM BOTÕES DE AÇÃO -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Registros de Produção</span>
+                    <form th:if="${fiabilidade.status.name() == 'ABERTO'}"
+                        th:action="@{/fiabilidade/finalizar/{id}(id=${fiabilidade.id})}" method="post"
+                        onsubmit="return confirm('Deseja finalizar este dia de produção?')">
+                        <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-lock"></i> Finalizar
+                            Produção</button>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table id="tabela" class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Data Apontamento</th>
+                                <th>Hora</th>
+                                <th>Quantidade</th>
+                                <th class="text-center">Ações</th> <!-- Nova coluna -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${registros}">
+                                <td th:text="${#temporals.format(r.dataApontamento, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${r.horaRegistro}"></td>
+                                <td th:text="${r.quantidade}"></td>
+                                <!-- Célula com os botões de ação -->
+                                <td class="text-center">
+                                    <!-- Só permite ação se o turno estiver ABERTO -->
+                                    <div th:if="${fiabilidade.status.name() == 'ABERTO'}">
+                                        <!-- Botão Editar -->
+                                        <a th:href="@{/fiabilidade/registro/editar/{id}(id=${r.id})}"
+                                            class="btn btn-warning btn-sm" title="Editar Registro">
+                                            <i class="fas fa-edit">Editar</i>
+                                        </a>
+                                        <!-- Botão Excluir -->
+                                        <form th:action="@{/fiabilidade/registro/excluir/{id}(id=${r.id})}"
+                                            method="post" style="display:inline;"
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este registro?');">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                title="Excluir Registro">
+                                                <i class="fas fa-trash">Excluir</i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                    
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensagem se nenhum turno for encontrado -->
+        <div th:if="${fiabilidade == null and equipamentoSelecionado != null}" class="alert alert-warning text-center">
+            Nenhum turno de trabalho encontrado para o equipamento e data selecionados. <a
+                th:href="@{/fiabilidade/novo}" class="alert-link">Criar um novo turno?</a>
+        </div>
+    </div>
+    <div th:replace="fragments/scripts :: scripts"></div>
+</body>
+
+<script th:if="${fiabilidade}">
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // 👇 CONDIÇÃO ADICIONADA AQUI 👇
+        // Só executa o preenchimento automático se for um NOVO registro (sem ID)
+        const isNewRecord = '[[${novoRegistro.id == null}]]';
+
+        if (isNewRecord === 'true') {
+            // Pega a data e hora atuais
+            const agora = new Date();
+
+            // Formata a hora para HH:MM
+            const horas = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            const horaAtual = `${horas}:${minutos}`;
+
+            // Formata a data para YYYY-MM-DD
+            const ano = agora.getFullYear();
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const dataAtual = `${ano}-${mes}-${dia}`;
+
+            // Adiciona IDs aos campos para seleção no JS
+            const campoHora = document.querySelector('input[th\\:field="*{horaRegistro}"], input[name="horaRegistro"]');
+            const campoData = document.querySelector('input[th\\:field="*{dataApontamento}"], input[name="dataApontamento"]');
+
+            if (campoHora) {
+                campoHora.value = horaAtual;
+            }
+            if (campoData) {
+                campoData.value = dataAtual;
+            }
+        }
+    });
+</script>
+
+</html>
