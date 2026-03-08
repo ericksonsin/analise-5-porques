@@ -57,13 +57,15 @@
 
 <style>
     @media print {
+
         /* 1. Esconde tudo por padrão */
         body * {
             visibility: hidden !important;
         }
 
         /* 2. Reseta o corpo para não interferir */
-        body, html {
+        body,
+        html {
             margin: 0 !important;
             padding: 0 !important;
             height: auto !important;
@@ -78,8 +80,10 @@
             top: 0 !important;
             width: 100% !important;
             height: auto !important;
-            overflow: visible !important; /* Permite que o conteúdo interno flua para outras páginas */
-            visibility: visible !important; /* Torna o modal visível */
+            overflow: visible !important;
+            /* Permite que o conteúdo interno flua para outras páginas */
+            visibility: visible !important;
+            /* Torna o modal visível */
         }
 
         /* 4. Garante que todos os filhos do modal sejam visíveis */
@@ -88,7 +92,8 @@
         }
 
         /* 5. Zera os contêineres do Bootstrap para não adicionarem espaço ou transformações */
-        .modal-dialog, .modal-content {
+        .modal-dialog,
+        .modal-content {
             transform: none !important;
             margin: 0 !important;
             padding: 0 !important;
@@ -99,12 +104,17 @@
         }
 
         /* 6. Controla a quebra de página para evitar cortes estranhos */
-        .timeline-steps, #causaRaizBox, .row.mb-4 {
-            page-break-inside: avoid !important; /* Evita que esses blocos quebrem no meio */
+        .timeline-steps,
+        #causaRaizBox,
+        .row.mb-4 {
+            page-break-inside: avoid !important;
+            /* Evita que esses blocos quebrem no meio */
         }
 
         /* 7. Esconde elementos desnecessários */
-        .modal-backdrop, .modal-header .btn-close, .modal-footer {
+        .modal-backdrop,
+        .modal-header .btn-close,
+        .modal-footer {
             display: none !important;
         }
 
@@ -127,7 +137,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="mb-0"><i class="fas fa-microscope me-2 text-primary"></i>Análises Técnicas</h3>
-         <div class="d-flex flex-wrap gap-2">
+            <div class="d-flex flex-wrap gap-2">
                 <!-- Botão de Exportar Excel (NOVO) -->
                 <button class="btn btn-success shadow-sm me-2" onclick="exportarParaExcel()">
                     <i class="fas fa-file-excel"></i> <span class="hide-mobile">Exportar Excel</span>
@@ -141,7 +151,7 @@
         <div class="card shadow-sm border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table id="tabela" class="table table-hover align-middle mb-0">
+                    <table id="tabela-listar" class="table table-hover align-middle mb-0">
                         <thead class="table-dark">
                             <tr>
                                 <th class="ps-3">Equipamento</th>
@@ -294,6 +304,43 @@
 
     <!-- SheetJS (XLSX) - Biblioteca para gerar Excel real -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            console.log("Scripts carregados com sucesso!");
+
+            // Inicializa o Select2
+            if ($('.select2-multiple').length > 0) {
+                $('.select2-multiple').select2({
+                    theme: "bootstrap-5",
+                    width: '100%',
+                    placeholder: "Selecione os subconjuntos",
+                    allowClear: true,
+                    closeOnSelect: false
+                });
+                console.log("Select2 ativado.");
+            }
+
+            // Inicializa o DataTable
+            if ($('#tabela-listar').length > 0) {
+                $('#tabela-listar').DataTable({
+                    language: {
+                        url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json",
+                        emptyTable: "Nenhum registro encontrado."
+                    },
+                    pageLength: 5,
+                    destroy: true,
+                    autoWidth: false,
+
+                    // --- 👇 CORREÇÃO ADICIONADA AQUI 👇 ---
+                    // Define a ordenação inicial como nula (nenhuma ).
+                    // A tabela será exibida na ordem em que foi renderizada no HTML.
+                    "order": []
+                });
+                console.log("DataTable ativado.");
+            }
+        });
+    </script>
 
     <script th:inline="javascript">
         function exibirDetalhes(btn) {
