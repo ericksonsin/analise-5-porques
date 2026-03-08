@@ -28,7 +28,6 @@
                             <label class="form-label fw-bold">Nome do Equipamento</label>
                             <input type="text" name="nome" class="form-control" placeholder="Ex: Máquina de Envase"
                                 th:value="${equipamento != null} ? ${equipamento.nome} : ''" required>
-
                         </div>
 
                         <div class="col-md-12 mb-4">
@@ -38,11 +37,17 @@
                                     th:selected="${equipamento != null} ?
             ${equipamento.subconjuntos.contains(sub)} : false">
                                 </option>
-
                             </select>
                             <div class="form-text">Você pode pesquisar e selecionar múltiplos itens.</div>
                         </div>
                     </div>
+
+                     <div class="col-md-12 mb-4">
+                                    <label class="form-label fw-bold">Produção por Hora</label>
+                                    <input type="number" name="producaoPorHora" class="form-control form-control-lg shadow-sm"
+                                        th:value="${equipamento != null} ? ${equipamento.producaoPorHora} : ''"
+                                        placeholder="Ex: 100, 200...">
+                                </div>
 
                     <div class="d-flex justify-content-end gap-2">
                         <a th:href="@{/equipamentos}" class="btn btn-outline-secondary">Cancelar</a>
@@ -66,6 +71,7 @@
                                 <th width="50">ID</th>
                                 <th>Nome do Equipamento</th>
                                 <th>Subconjuntos</th>
+                                <th>Produção por Hora</th>
                                 <th width="120">Ações</th>
                             </tr>
                         </thead>
@@ -78,6 +84,7 @@
                                         th:text="${sub.nome}">
                                     </span>
                                 </td>
+                                <td th:text="${equip.producaoPorHora}" class="fw-bold"></td>
                                 <td>
                                     <a th:href="@{/equipamentos/editar/{id}(id=${equip.id})}"
                                         class="btn btn-warning btn-sm">

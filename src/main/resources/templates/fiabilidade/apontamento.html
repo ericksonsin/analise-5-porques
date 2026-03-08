@@ -12,7 +12,8 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
                 <form th:action="@{/fiabilidade/apontamento}" method="get" class="row g-3 align-items-end">
-                    <input type="hidden" name="editId" th:if="${novoRegistro.id != null}" th:value="${novoRegistro.id}" />
+                    <input type="hidden" name="editId" th:if="${novoRegistro.id != null}"
+                        th:value="${novoRegistro.id}" />
                     <!-- apontamento.html -->
 
                     <div class="col-md-5">
@@ -45,7 +46,7 @@
             <!-- Resumo do Turno -->
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Resumo do Turno</span>
+                    <span>Resumo</span>
                     <span class="badge"
                         th:classappend="${fiabilidade.status.name() == 'ABERTO'} ? 'bg-success' : 'bg-secondary'"
                         th:text="${fiabilidade.status.name()}"></span>
@@ -75,6 +76,47 @@
                                     th:style="'width:' + ${fiabilidadePercentual} + '%'"
                                     th:text="${#numbers.formatDecimal(fiabilidadePercentual,1,1)} + '%'"></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- apontamento.html -->
+
+            <!-- Substitua o <hr> e a seção de Análise de Ritmo por este novo bloco -->
+            <hr>
+            <h6 class="text-center text-muted mb-3">Análise de Ritmo para Atingir a Meta</h6>
+            <div class="row text-center mb-4">
+                <!-- Coluna 1: Ritmo Médio Necessário para o Turno -->
+                <div class="col-md-4 mb-2">
+                    <div class="card bg-light h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">RITMO MÉDIO DO DIA</h6>
+                            <h3 class="fw-bold"
+                                th:text="${#numbers.formatDecimal(ritmoMedioNecessario, 1, 0, 'POINT')}">0</h3>
+                            <small class="text-muted">unidades/hora</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna 2: Ritmo Necessário A PARTIR DE AGORA -->
+                <div class="col-md-4 mb-2">
+                    <div class="card h-100"
+                        th:classappend="${ritmoParaBaterMeta > ritmoMedioNecessario} ? 'bg-warning-soft' : 'bg-light'">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">RITMO NECESSÁRIO (AGORA)</h6>
+                            <h3 class="fw-bold text-warning"
+                                th:text="${#numbers.formatDecimal(ritmoParaBaterMeta, 1, 0, 'POINT')}">0</h3>
+                            <small class="text-muted">unidades/hora</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna 3: Projeção / Status da Meta (Esqueleto para o JS) -->
+                <div class="col-md-4 mb-2">
+                    <div class="card h-100" id="card-projecao">
+                        <div class="card-body d-flex flex-column justify-content-center" id="body-projecao">
+                            <!-- O conteúdo será inserido aqui pelo JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -170,7 +212,7 @@
                                     </div>
                                 </td>
                             </tr>
-                    
+
                         </tbody>
                     </table>
                 </div>
@@ -219,6 +261,51 @@
                 campoData.value = dataAtual;
             }
         }
+    });
+</script>
+
+
+<script th:if="${fiabilidade != null}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. LER OS VALORES CALCULADOS PELO BACKEND
+        const produzido = /*[[${produzido}]]*/ 0;
+        const metaTotal = /*[[${fiabilidade.metaProducao}]]*/ 0;
+        const isPossivel = /*[[${isPossivelBaterMeta}]]*/ true;
+
+        // 2. PEGAR OS ELEMENTOS DO DOM
+        const cardProjecao = document.getElementById('card-projecao');
+        const bodyProjecao = document.getElementById('body-projecao');
+
+        let projecaoHTML = '';
+
+        // 3. APLICAR A LÓGICA DE EXIBIÇÃO
+        if (produzido >= metaTotal) {
+            // Caso 1: Meta já foi atingida
+            cardProjecao.className = 'card h-100 bg-success-soft';
+            projecaoHTML = `
+                <h6 class="card-title text-success"><i class="fas fa-trophy"></i> STATUS DA META</h6>
+                <h4 class="fw-bold text-success">META ATINGIDA!</h4>
+            `;
+        } else if (isPossivel) {
+            // Caso 2: Meta ainda não foi atingida, mas é POSSÍVEL
+            cardProjecao.className = 'card h-100 bg-warning-soft';
+            projecaoHTML = `
+                <h6 class="card-title text-warning"><i class="fas fa-hourglass-half"></i> STATUS DA META</h6>
+                <h4 class="fw-bold text-warning">Ainda é possível</h4>
+                <small class="text-muted">Mantenha o ritmo acima!</small>
+            `;
+        } else {
+            // Caso 3: Meta IMPOSSÍVEL de ser atingida
+            cardProjecao.className = 'card h-100 bg-danger-soft';
+            projecaoHTML = `
+                <h6 class="card-title text-danger"><i class="fas fa-times-circle"></i> STATUS DA META</h6>
+                <h4 class="fw-bold text-danger">IMPOSSÍVEL ATINGIR</h4>
+                <small class="text-muted">Ritmo necessário excede a capacidade.</small>
+            `;
+        }
+
+        // 4. INJETAR O HTML GERADO NO CARD
+        bodyProjecao.innerHTML = projecaoHTML;
     });
 </script>
 

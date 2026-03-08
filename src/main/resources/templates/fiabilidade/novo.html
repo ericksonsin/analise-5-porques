@@ -16,7 +16,7 @@
                 <h5 class="mb-0">
                     <i class="fas" th:classappend="${turno.id == null} ? 'fa-plus-circle' : 'fa-edit'"></i>
                     <!-- Título dinâmico -->
-                    <span th:text="${turno.id == null} ? 'Criar Novo Turno' : 'Editar Turno'"></span>
+                    <span th:text="${turno.id == null} ? 'Criar Meta de Produção' : 'Editar Turno'"></span>
                 </h5>
             </div>
             <div class="card-body">
@@ -86,7 +86,7 @@
                                 <span class="badge" th:classappend="${t.status.name() == 'ABERTO'} ? 'bg-success' : 'bg-secondary'" th:text="${t.status.name()}"></span>
                             </td>
                             <td class="text-center">
-                                <a th:href="@{/fiabilidade/editar/{id}(id=${t.id})}" class="btn btn-warning btn-sm" title="Editar Turno"><i class="fas fa-edit">Editar</i></a>
+                                <a sec:authorize="hasAnyRole('ADMIN', 'PLAN_PROD')" th:href="@{/fiabilidade/editar/{id}(id=${t.id})}" class="btn btn-warning btn-sm" title="Editar Turno"><i class="fas fa-edit">Editar</i></a>
                                  <form sec:authorize="hasAnyRole('ADMIN')" th:action="@{/fiabilidade/excluir/{id}(id=${t.id})}" method="post" style="display:inline;" onsubmit="return confirm('Atenção! Excluir um turno também removerá todos os seus registros de produção. Deseja continuar?');">
                                     <button type="submit" class="btn btn-danger btn-sm" title="Excluir Turno"><i class="fas fa-trash">Excluir</i></button>
                                 </form>
