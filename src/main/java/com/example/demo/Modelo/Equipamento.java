@@ -33,6 +33,8 @@ public class Equipamento {
     @JoinTable(name = "equipamento_subconjunto", joinColumns = @JoinColumn(name = "equipamento_id"), inverseJoinColumns = @JoinColumn(name = "subconjunto_id"))
     private List<Subconjunto> subconjuntos = new ArrayList<>();
 
+    private Integer producaoPorHora;
+
     public Long getId() {
         return id;
     }
@@ -79,6 +81,14 @@ public class Equipamento {
 
     public void setSubconjuntos(List<Subconjunto> subconjuntos) {
         this.subconjuntos = subconjuntos;
+    }
+
+       public Integer getProducaoPorHora() {
+        return producaoPorHora;
+    }
+
+    public void setProducaoPorHora(Integer producaoPorHora) {
+        this.producaoPorHora = producaoPorHora;
     }
 
 }

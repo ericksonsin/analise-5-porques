@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- dashboard.html -->
+
+<!-- dashboard.html -->
+
+<head>
+    <div th:replace="fragments/head :: head('Dashboard de Fiabilidade')"></div>
+
+    <!-- 👇 ESTILOS DE IMPRESSÃO ATUALIZADOS PARA LAYOUT VERTICAL 👇 -->
+    <style>
+        @media print {
+
+            /* 1. Esconde elementos desnecessários */
+            body .navbar,
+            .card.shadow-sm.border-0,
+            /* Esconde o card do filtro de data */
+            #botao-imprimir {
+                display: none !important;
+            }
+
+            /* 2. Reseta o layout para impressão */
+            body {
+                background-color: #fff !important;
+                font-size: 9pt;
+                /* Fonte um pouco menor para caber no layout vertical */
+                width: 100% !important;
+            }
+
+            .container {
+                max-width: 100% !important;
+                /* Garante que o container use toda a largura */
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                break-inside: avoid;
+            }
+
+            /* 3. Garante a cor da barra de progresso */
+            .progress,
+            .progress-bar {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .progress {
+                background-color: #e9ecef !important;
+                border: 1px solid #ccc;
+            }
+
+            .progress-bar {
+                color: #fff !important;
+            }
+
+            .bg-success {
+                background-color: #198754 !important;
+            }
+
+            .bg-warning {
+                background-color: #ffc107 !important;
+            }
+
+            .bg-danger {
+                background-color: #dc3545 !important;
+            }
+
+            /* --- 4. MUDANÇA PRINCIPAL: LAYOUT DA PÁGINA --- */
+            @page {
+                /* Define o layout para Retrato (vertical), como em um celular */
+                size: A4 portrait;
+                margin: 12mm;
+                /* Margem um pouco menor para aproveitar o espaço */
+            }
+        }
+    </style>
+</head>
+
+
+
+<body class="bg-light">
+
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <!-- dashboard.html -->
+
+    <div class="container mt-4 mb-5">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">
+                <i class="fas fa-chart-line text-primary"></i>
+                Dashboard de Fiabilidade
+            </h3>
+
+            <!-- 👇 BOTÃO DE IMPRESSÃO ADICIONADO AQUI 👇 -->
+            <button id="botao-imprimir" class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print me-1"></i>
+                Imprimir / Salvar PDF
+            </button>
+
+            <!-- Adicione um novo card ou botão -->
+            <a th:href="@{/fiabilidade/graficos}" class="btn btn-info">
+                <i class="fas fa-chart-pie"></i> Ver Gráficos
+            </a>
+
+        </div>
+
+
+        <!-- 1. FILTRO DE DATA -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <form th:action="@{/fiabilidade/dashboard}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="data" class="form-label">Selecione a Data</label>
+                        <input type="date" id="data" name="data" class="form-control"
+                            th:value="${#temporals.format(dataSelecionada, 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i>
+                            Filtrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. CARTÕES DE TOTAIS GERAIS -->
+        <div class="row mb-4">
+            <!-- Meta Total -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-start border-info border-4 h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title text-muted">META TOTAL</h6>
+                        <h2 class="display-6 fw-bold" th:text="${metaTotal}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <!-- Produzido Total -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-start border-success border-4 h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title text-muted">PRODUÇÃO TOTAL</h6>
+                        <h2 class="display-6 fw-bold text-success" th:text="${produzidoTotal}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <!-- Fiabilidade Geral -->
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="card shadow-sm border-start border-primary border-4 h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title text-muted">FIABILIDADE GERAL</h6>
+                        <h2 class="display-6 fw-bold text-primary"
+                            th:text="${#numbers.formatDecimal(fiabilidadeGeral, 1, 1)} + '%'">0%</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 3. TABELA DE PRODUÇÃO POR EQUIPAMENTO -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                Produção por Equipamento
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Equipamento</th>
+                            <th>Meta</th>
+                            <th>Produzido</th>
+                            <th>Faltando</th>
+                            <th>Fiabilidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="d : ${dashboard}">
+                            <td class="fw-bold text-primary" th:text="${d.equipamento}"></td>
+                            <td th:text="${d.meta}"></td>
+                            <td class="text-success" th:text="${d.produzido}"></td>
+                            <td class="text-danger" th:text="${d.faltando}"></td>
+                            <td>
+                                <div class="progress" style="height: 25px; font-size: 0.8rem;">
+                                    <div class="progress-bar"
+                                        th:classappend="${d.fiabilidade < 70} ? 'bg-danger' : (${d.fiabilidade < 90} ? 'bg-warning' : 'bg-success')"
+                                        th:style="'width:' + ${d.fiabilidade} + '%'" role="progressbar">
+                                        <span class="fw-bold"
+                                            th:text="${#numbers.formatDecimal(d.fiabilidade,1,1)} + '%'"></span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(dashboard)}">
+                            <td colspan="5" class="text-center text-muted p-4">
+                                Nenhum turno de trabalho encontrado para a data selecionada.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+</body>
+
+</html>

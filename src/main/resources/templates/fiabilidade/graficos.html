@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:replace="fragments/head :: head('Gráficos de Produção' )"></div>
+</head>
+<body class="bg-light">
+    <div th:replace="fragments/navbar :: navbar"></div>
+    <div class="container mt-4 mb-5">
+        <h3 class="mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Análise Gráfica da Produção</h3>
+
+        <!-- FILTRO DE PERÍODO -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="dataInicio" class="form-label">Data de Início</label>
+                        <input type="date" id="dataInicio" name="dataInicio" class="form-control" th:value="${#temporals.format(T(java.time.LocalDate).now().minusDays(6), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="dataFim" class="form-label">Data de Fim</label>
+                        <input type="date" id="dataFim" name="dataFim" class="form-control" th:value="${#temporals.format(T(java.time.LocalDate).now(), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-3">
+                        <button id="btn-atualizar-graficos" class="btn btn-primary w-100">
+                            <i class="fas fa-sync-alt"></i> Atualizar Gráficos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- GRÁFICO DE BARRAS -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header">Produção Total por Equipamento no Período</div>
+                    <div class="card-body"><canvas id="graficoBarras"></canvas></div>
+                </div>
+            </div>
+            <!-- GRÁFICO DE LINHA -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header">Produção Total por Dia</div>
+                    <div class="card-body"><canvas id="graficoLinha"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- SCRIPT ATUALIZADO PARA PERÍODO -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctxBarras = document.getElementById('graficoBarras').getContext('2d');
+            const ctxLinha = document.getElementById('graficoLinha').getContext('2d');
+            let chartBarras, chartLinha;
+
+            async function carregarGraficos() {
+                const dataInicio = document.getElementById('dataInicio').value;
+                const dataFim = document.getElementById('dataFim').value;
+
+                if (!dataInicio || !dataFim) {
+                    alert('Por favor, selecione uma data de início e uma data de fim.');
+                    return;
+                }
+
+                const url = `/fiabilidade/dados-grafico-diario?dataInicio=${dataInicio}&dataFim=${dataFim}`;
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Erro ao buscar dados da API');
+                    const dados = await response.json();
+
+                    if (chartBarras) chartBarras.destroy();
+                    if (chartLinha) chartLinha.destroy();
+
+                    // Gráfico de Barras (Produção por Equipamento)
+                    chartBarras = new Chart(ctxBarras, {
+                        type: 'bar',
+                        data: {
+                            labels: dados.labelsBarras,
+                            datasets: [{
+                                label: 'Produção Total no Período',
+                                data: dados.dataBarras,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                            }]
+                        },
+                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    });
+
+                    // Gráfico de Linha (Produção Total por Dia)
+                    chartLinha = new Chart(ctxLinha, {
+                        type: 'line',
+                        data: {
+                            labels: dados.labelsLinha,
+                            datasets: [{
+                                label: 'Produção Total do Dia',
+                                data: dados.dataLinha,
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                fill: true,
+                                tension: 0.1
+                            }]
+                        },
+                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    });
+
+                } catch (error) {
+                    console.error("Falha ao carregar gráficos:", error);
+                }
+            }
+
+            document.getElementById('btn-atualizar-graficos').addEventListener('click', carregarGraficos);
+            carregarGraficos(); // Carga inicial
+        });
+    </script>
+</body>
+</html>

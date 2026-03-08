@@ -148,7 +148,7 @@
                 </div>
             </div>
 
-            <div sec:authorize="hasAnyRole('ADMIN', 'OPERADOR')" class="col-12 col-sm-6 col-lg-4">
+            <div sec:authorize="hasAnyRole('ADMIN', 'OPERADOR', 'PLAN_PROD')" class="col-12 col-sm-6 col-lg-4">
                 <div class="card shadow-sm p-3 border-start border-success border-4">
                     <div class="card-body d-flex flex-column">
                         <div class="icon-box bg-success-soft">
@@ -161,7 +161,7 @@
                 </div>
             </div>
 
-            <div sec:authorize="hasAnyRole('ADMIN', 'OPERADOR')" class="col-12 col-sm-6 col-lg-4">
+            <div sec:authorize="hasAnyRole('ADMIN', 'OPERADOR', 'PLAN_PROD')" class="col-12 col-sm-6 col-lg-4">
                 <div class="card shadow-sm p-3">
                     <div class="card-body d-flex flex-column">
                         <div class="icon-box bg-warning-soft">
@@ -176,20 +176,61 @@
             </div>
 
             <div sec:authorize="hasAnyRole('ADMIN')" class="col-12 col-sm-6 col-lg-4">
-            <div class="card shadow-sm p-3">
-                <div class="card-body d-flex flex-column">
-                    <div class="icon-box bg-primary-soft" style="background-color: #e7f5ff; color: #228be6;">
-                        <i class="fas fa-wrench"></i>
+                <div class="card shadow-sm p-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-primary-soft" style="background-color: #e7f5ff; color: #228be6;">
+                            <i class="fas fa-wrench"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Mecânicos</h5>
+                        <p class="card-text text-muted small">Cadastro da equipe de manutenção.</p>
+                        <a th:href="@{/mecanicos/novo}" class="btn btn-outline-primary btn-manage mt-auto">Cadastrar
+                            Equipe</a>
                     </div>
-                    <h5 class="card-title fw-bold">Mecânicos</h5>
-                    <p class="card-text text-muted small">Cadastro da equipe de manutenção.</p>
-                    <a th:href="@{/mecanicos/novo}" class="btn btn-outline-primary btn-manage mt-auto">Cadastrar
-                        Equipe</a>
                 </div>
             </div>
-        </div>
 
-    </div>
+            <div sec:authorize="hasAnyRole('ADMIN','OPERADOR', 'PLAN_PROD')" class="col-12 col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3 border-start border-primary border-4 h-100">
+                    <div class="card-body d-flex flex-column">
+
+                        <div class="icon-box bg-primary-soft">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        <h5 class="card-title fw-bold">Fiabilidade</h5>
+
+                        <p class="card-text text-muted small">
+                            Aponte a produção, crie turnos de trabalho e acompanhe o desempenho.
+                        </p>
+
+                        <!-- AÇÃO PRINCIPAL: Leva para a nova tela de apontamento -->
+                        <a th:href="@{/fiabilidade/apontamento}" class="btn btn-dark btn-manage mt-auto mb-2">
+                            <i class="fas fa-edit"></i> Apontar Produção
+                        </a>
+
+                        <!-- AÇÕES SECUNDÁRIAS -->
+                        <div class="d-flex gap-2">
+
+                            <!-- Botão para criar um novo turno -->
+                            <a th:href="@{/fiabilidade/novo}" class="btn btn-success btn-sm w-50">
+                                <i class="fas fa-plus"></i> Produção
+                            </a>
+
+                            <!-- Botão para ver o dashboard geral -->
+                            <a th:href="@{/fiabilidade/dashboard}" class="btn btn-outline-primary btn-sm w-50">
+                                <i class="fas fa-chart-line"></i> Dashboard
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/head :: head('Painel de Produção')"></head>
+
+<body class="bg-light">
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mt-4 mb-5">
+
+<div class="card shadow-sm border-0 mb-3">
+
+<div class="card-body">
+
+<div class="row text-center">
+
+<div class="col-md-3">
+<h6 class="text-muted">Equipamento</h6>
+<h5 class="text-primary"
+th:text="${fiabilidade.equipamento.nome}"></h5>
+</div>
+
+<div class="col-md-2">
+<h6 class="text-muted">Meta</h6>
+<h4 th:text="${fiabilidade.metaProducao}"></h4>
+</div>
+
+<div class="col-md-2">
+<h6 class="text-muted">Produzido</h6>
+<h4 class="text-success" th:text="${produzido}"></h4>
+</div>
+
+<div class="col-md-2">
+<h6 class="text-muted">Faltando</h6>
+<h4 class="text-danger" th:text="${faltando}"></h4>
+</div>
+
+<div class="col-md-3">
+<h6 class="text-muted">Fiabilidade</h6>
+
+<div class="progress">
+
+<div class="progress-bar bg-success"
+role="progressbar"
+th:style="'width:' + ${fiabilidadePercentual} + '%'">
+
+<span th:text="${#numbers.formatDecimal(fiabilidadePercentual,1,2)} + '%'"></span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- REGISTRO PRODUÇÃO -->
+
+<div class="card shadow-sm border-0 mb-3">
+
+<div class="card-header bg-primary text-white">
+
+Registrar Produção
+
+</div>
+
+<div class="card-body">
+
+<form th:action="@{/fiabilidade/registrar}" method="post" th:object="${registro}">
+
+<input type="hidden"
+th:value="${fiabilidade.id}"
+name="fiabilidade.id">
+
+<div class="row">
+
+<div class="col-md-4">
+
+<label>Hora</label>
+
+<input type="time"
+class="form-control"
+th:field="*{horaRegistro}"
+required>
+
+</div>
+
+<div class="col-md-4">
+
+<label>Quantidade</label>
+
+<input type="number"
+class="form-control"
+th:field="*{quantidade}"
+required>
+
+</div>
+
+<div class="col-md-4 d-flex align-items-end">
+
+<button class="btn btn-success w-100">
+
+<i class="fas fa-plus"></i>
+Registrar
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+<!-- TABELA -->
+
+<div class="card shadow-sm border-0">
+
+<div class="card-header">
+
+Registros do Dia
+
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-striped mb-0">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>Hora</th>
+<th>Quantidade</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr th:each="r : ${registros}">
+
+<td th:text="${r.horaRegistro}"></td>
+<td th:text="${r.quantidade}"></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<div th:replace="fragments/scripts :: scripts"></div>
+
+</body>
+</html>

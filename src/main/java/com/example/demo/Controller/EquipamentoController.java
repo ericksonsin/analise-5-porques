@@ -37,7 +37,7 @@ public class EquipamentoController {
     }
 
     @PostMapping("/salvar")
-    public String salvar(@RequestParam(required = false) Long id,
+    public String salvar(@RequestParam(required = false) Long id, Integer producaoPorHora,
             @RequestParam String nome,
             @RequestParam(required = false) List<Long> subconjuntosIds,
             RedirectAttributes redirectAttributes) {
@@ -54,6 +54,7 @@ public class EquipamentoController {
             }
 
             equipamento.setNome(nome);
+            equipamento.setProducaoPorHora (producaoPorHora);
 
             if (subconjuntosIds != null) {
                 List<Subconjunto> subconjuntos = subconjuntoRepository.findAllById(subconjuntosIds);

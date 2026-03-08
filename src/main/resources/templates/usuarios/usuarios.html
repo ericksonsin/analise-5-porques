@@ -70,6 +70,7 @@
                             <select name="role" class="form-select shadow-sm">
                                 <option value="ROLE_ADMIN" th:selected="${usuario != null && usuario.role == 'ADMIN'}">ADMINISTRADOR</option>
                                 <option value="ROLE_OPERADOR" th:selected="${usuario != null && usuario.role == 'OPERADOR'}">OPERADOR</option>
+                                <option value="ROLE_PLAN_PROD" th:selected="${usuario != null && usuario.role == 'PLAN_PROD'}">PRODUÇÃO</option>
                             </select>
                         </div>
 
