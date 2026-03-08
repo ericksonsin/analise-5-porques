@@ -1,5 +1,7 @@
 package com.example.demo.Controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +25,9 @@ import com.example.demo.Repository.EquipamentoRepository;
 import com.example.demo.Repository.MecanicoRepository;
 import com.example.demo.Repository.SubconjuntoRepository;
 import com.example.demo.Repository.UserRepository;
+
+import net.coobird.thumbnailator.Thumbnails;
+
 import org.springframework.beans.factory.annotation.Value;
 
 @Controller
@@ -46,18 +51,18 @@ public class ProblemaController {
     @GetMapping("/listar-problemas")
     public String listar(Model model, Authentication authentication) {
 
-         List<Analise5Porques> analises = analiseRepository.findAllByOrderByDataInicioAvariaDesc();
+        List<Analise5Porques> analises = analiseRepository.findAllByOrderByDataInicioAvariaDesc();
         model.addAttribute("analises", analises);
 
         // boolean isAdmin = authentication.getAuthorities()
-        //         .stream()
-        //         .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        // .stream()
+        // .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         // if (isAdmin) {
-        //     model.addAttribute("analises", analiseRepository.findAll());
+        // model.addAttribute("analises", analiseRepository.findAll());
         // } else {
-        //     model.addAttribute("analises",
-        //             analiseRepository.findByUsuarioAnaliseUsername(authentication.getName()));
+        // model.addAttribute("analises",
+        // analiseRepository.findByUsuarioAnaliseUsername(authentication.getName()));
         // }
 
         return "problema/problema-lista";
@@ -102,7 +107,6 @@ public class ProblemaController {
         if (id != null) {
             analiseDB = analiseRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("ID inválido: " + id));
-            // Copia campos do form para o objeto do banco, exceto IDs e Imagem (se vazia)
             BeanUtils.copyProperties(analise, analiseDB, "id", "caminhoImagem", "usuarioAnalise");
         } else {
             analiseDB = analise;
@@ -113,6 +117,7 @@ public class ProblemaController {
         analiseDB.setSubconjunto(subconjuntoRepository.findById(subconjuntoId).get());
         analiseDB.setMecanico(mecanicoRepository.findById(mecanicoId).get());
 
+        // --- INÍCIO DA MELHORIA NO TRATAMENTO DA IMAGEM ---
         if (!foto.isEmpty()) {
             String nomeArquivo = UUID.randomUUID() + "_" + foto.getOriginalFilename();
             Path uploadPath = Paths.get(uploadDir);
@@ -121,13 +126,28 @@ public class ProblemaController {
                 Files.createDirectories(uploadPath);
             }
 
+            // 1. Cria um "arquivo temporário" na memória RAM para a imagem otimizada.
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            // 2. Usa o Thumbnailator para otimizar a imagem.
+            Thumbnails.of(foto.getInputStream())
+                    .size(1280, 1280) // Redimensiona para um máximo de 1280px (largura ou altura), mantendo a
+                                      // proporção.
+                    .outputQuality(0.85) // Comprime para 85% da qualidade. Ótimo equilíbrio entre qualidade e tamanho.
+                    .toOutputStream(outputStream); // Executa a otimização e salva na memória.
+
+            // 3. Prepara a imagem otimizada (que está na memória) para ser salva no disco.
+            ByteArrayInputStream inputStreamOtimizado = new ByteArrayInputStream(outputStream.toByteArray());
+
+            // 4. Salva a imagem JÁ OTIMIZADA no disco.
             Files.copy(
-                    foto.getInputStream(),
+                    inputStreamOtimizado,
                     uploadPath.resolve(nomeArquivo),
                     StandardCopyOption.REPLACE_EXISTING);
 
             analiseDB.setCaminhoImagem(nomeArquivo);
         }
+        // --- FIM DA MELHORIA ---
 
         analiseRepository.save(analiseDB);
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Registro processado com sucesso!");
