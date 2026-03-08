@@ -11,7 +11,7 @@
         <div th:replace="fragments/messages :: mensagens"></div>
 
         <!-- 1. FORMULÁRIO DINÂMICO (CRIAR/EDITAR) -->
-        <div class="card shadow-sm border-0 mb-5">
+        <div sec:authorize="hasAnyRole('ADMIN', 'PLAN_PROD')"  class="card shadow-sm border-0 mb-5">
             <div class="card-header" th:classappend="${turno.id == null} ? 'bg-primary text-white' : 'bg-warning text-dark'">
                 <h5 class="mb-0">
                     <i class="fas" th:classappend="${turno.id == null} ? 'fa-plus-circle' : 'fa-edit'"></i>
