@@ -221,8 +221,8 @@
 
         <!-- Mensagem se nenhum turno for encontrado -->
         <div th:if="${fiabilidade == null and equipamentoSelecionado != null}" class="alert alert-warning text-center">
-            Nenhum turno de trabalho encontrado para o equipamento e data selecionados. <a
-                th:href="@{/fiabilidade/novo}" class="alert-link">Criar um novo turno?</a>
+            Nenhum dia de produção encontrado para o equipamento e data selecionados. <a
+                th:href="@{/fiabilidade/novo}" class="alert-link">Criar um novo dia?</a>
         </div>
     </div>
     <div th:replace="fragments/scripts :: scripts"></div>

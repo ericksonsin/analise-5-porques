@@ -89,7 +89,7 @@ public class FiabilidadeController {
                                                 fiabilidade.getData());
                 if (existente.isPresent()) {
                         redirectAttributes.addFlashAttribute("mensagemErro",
-                                        "Já existe um turno cadastrado para este equipamento na data selecionada.");
+                                        "Já existe um dia de produção cadastrado para este equipamento na data selecionada.");
                         return "redirect:/fiabilidade/novo";
                 }
 
