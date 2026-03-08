@@ -46,7 +46,7 @@ public class ProblemaController {
     @GetMapping("/listar-problemas")
     public String listar(Model model, Authentication authentication) {
 
-        List<Analise5Porques> analises = analiseRepository.findAll();
+         List<Analise5Porques> analises = analiseRepository.findAllByOrderByDataInicioAvariaDesc();
         model.addAttribute("analises", analises);
 
         // boolean isAdmin = authentication.getAuthorities()
